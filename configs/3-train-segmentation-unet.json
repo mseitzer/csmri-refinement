@@ -1,0 +1,56 @@
+{
+  "seed": 0,
+  "run_name": "3-train-segmentation-unet",
+  "description": "Train a UNET for segmentation on ground truth reconstructions",
+
+  "train_dataset": "ScarSeg",
+  "validation_dataset": "ScarSeg",
+  "split_ratio": [4, 1, 1],
+  "input_mode": "2d",
+  "dataset_mode": "segmentation",
+
+  "undersampling": {
+    "comment": "Undersampling is not active in dataset_mode segmentation",
+    "sampling_scheme": "varden",
+    "acceleration_factor": 8,
+    "variable_acceleration": false
+  },
+
+  "runner_type": "standard",
+  "application": "segmentation",
+
+  "model": {
+    "name": "UNET",
+      "num_inputs": 2,
+      "num_outputs": 2,
+      "num_layers_per_scale": 2,
+      "encode_filters": [32, 64, 128, 256, 512],
+      "decode_filters": [256, 128, 64, 32],
+      "use_bn": true,
+      "upsampling_mode": "pixelshuffle",
+      "padding": "reflection",
+      "output_activation": "none"
+  },
+
+  "loss_name": "CrossEntropy",
+
+  "optimizer": {
+    "name": "Adam",
+    "learning_rate": 0.0002
+  },
+
+  "num_epochs": 200,
+  "batch_size": 8,
+  "epochs_per_validation": 1,
+  "epochs_per_checkpoint": 1,
+  "steps_per_train_summary": 20,
+  "num_periodic_checkpoints": 1,
+  "num_data_workers": 4,
+
+  "train_metrics": ["dice_class_0", "dice_class_1"],
+  "validation_metrics": ["dice_class_0", "dice_class_1"],
+  "validation_checkpoint_metrics": ["dice_class_1"],
+
+  "use_tensorboard": true,
+  "num_image_summaries": 1
+}

@@ -1,0 +1,48 @@
+{
+  "seed": 0,
+  "run_name": "1-recnet",
+  "description": "Train the RecNet baseline on ScarSeg512",
+
+  "train_dataset": "ScarSeg",
+  "validation_dataset": "ScarSeg",
+  "split_ratio": [4, 1, 1],
+  "input_mode": "2d",
+
+  "undersampling": {
+    "sampling_scheme": "varden",
+    "acceleration_factor": 8,
+    "variable_acceleration": false
+  },
+
+  "runner_type": "standard",
+  "application": "reconstruction",
+
+  "model": {
+    "name": "RecNet",
+    "num_blocks": 3,
+    "num_convs": 3,
+    "num_filters": 32
+  },
+
+  "loss_name": "MSE",
+
+  "optimizer": {
+    "name": "Adam",
+    "learning_rate": 0.0002
+  },
+
+  "num_epochs": 1500,
+  "batch_size": 20,
+  "epochs_per_validation": 1,
+  "epochs_per_checkpoint": 1,
+  "steps_per_train_summary": 20,
+  "num_periodic_checkpoints": 2,
+  "num_data_workers": 4,
+
+  "train_metrics": ["psnr"],
+  "validation_metrics": ["psnr", "ssim"],
+  "validation_checkpoint_metrics": ["loss_MSE"],
+
+  "use_tensorboard": true,
+  "num_image_summaries": 8
+}

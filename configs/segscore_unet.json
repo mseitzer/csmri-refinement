@@ -1,0 +1,13 @@
+{
+  "name": "UNET",
+  "num_inputs": 2,
+  "num_outputs": 2,
+  "num_layers_per_scale": 2,
+  "encode_filters": [32, 64, 128, 256, 512],
+  "decode_filters": [256, 128, 64, 32],
+  "use_bn": true,
+  "upsampling_mode": "pixelshuffle",
+  "padding": "reflection",
+  "output_activation": "none",
+  "pretrained_weights": ["../resources/models/INSERT_SEGMENTATION_MODEL_CHECKPOINT_HERE", "model"]
+}

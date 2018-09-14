@@ -1,0 +1,118 @@
+{
+  "seed": 1,
+  "run_name": "2-refinement",
+  "description": "Train the refinement network on top of pretrained RecNet",
+
+  "train_dataset": "ScarSeg",
+  "validation_dataset": "ScarSeg",
+  "split_ratio": [4, 1, 1],
+  "input_mode": "2d",
+
+  "undersampling": {
+    "sampling_scheme": "varden",
+    "acceleration_factor": 8,
+    "variable_acceleration": false
+  },
+  
+  "runner_type": "adversarial",
+  "application": "reconstruction",
+
+  "generator_model": {
+    "name": "RefinementWrapper",
+    "mode": "real-penalty-add",
+    "input_mode": "output",
+    "pretrained_model": {
+      "name": "RecNet",
+      "num_blocks": 3,
+      "num_convs": 3,
+      "num_filters": 32,
+      "pretrained_weights": ["../resources/models/INSERT_CHECKPOINT_PATH_HERE", "model"]
+    },
+    "learnable_model": {
+      "name": "UNET",
+      "num_inputs": 2,
+      "num_outputs": 1,
+      "num_layers_per_scale": 2,
+      "encode_filters": [32, 64, 128],
+      "decode_filters": [64, 32],
+      "kernel_size": 4,
+      "upsampling_mode": "nn-resize-conv",
+      "output_activation": "none",
+      "padding": "reflection",
+      "decoder_act_upsampling_only": true,
+      "weight_init": {
+        "conv_weight": ["orthogonal", "relu"],
+        "batchnorm_weight": ["constant", 1.0]
+      }
+    }
+  },
+
+  "discriminator_model": {
+    "spatial_shape": [512, 512],
+    "num_inputs": 1,
+    "input_method": "simple-magnitude",
+
+    "num_filters_per_layer": [64, 128, 256, 512, 1024, 1024],
+    "strides": [2, 2, 2, 2, 2, 1],
+	"kernel_sizes": 4,
+	"final_conv_kernel_size": 4,
+	"padding": "reflection",
+
+	"act_fn": "lrelu",
+	"relu_leakiness": 0.2,
+	
+	"dropout_after": [3, 4, 5],
+    "dropout_prob": 0.5,
+
+	"use_norm_layers": "not-first",
+	"norm_layer": "batch",
+
+    "compute_features": true,
+    "use_image_pool": true,
+    "image_pool_size": 80
+  },
+
+  "generator_adversarial_losses": ["gan", "FeatureMatching"],
+  "generator_losses": ["VGG19", "FeaturePenalty"],
+  "generator_loss_weights": {
+	  "gan": 0.5,
+      "VGG19": 10,
+      "FeaturePenalty": 2 
+  },
+  "discriminator_losses": ["gan"],
+  "discriminator_label_smoothing": 0.1,
+
+  "feature_penalty": {
+    "criterion": "L1",
+    "input_key": "prescaled_refinement"
+  },
+  
+  "generator_optimizer": {
+    "name": "Adam",
+    "learning_rate": 0.0002,
+    "beta1": 0.5
+  },
+
+  "discriminator_optimizer": {
+    "name": "Adam",
+    "learning_rate": 0.0002,
+    "beta1": 0.5
+  },
+
+  "num_epochs": 200,
+  "batch_size": 5,
+  "validation_batch_size": 5,
+  "epochs_per_validation": 1,
+  "epochs_per_checkpoint": 1,
+  "steps_per_train_summary": 20,
+  "num_periodic_checkpoints": 20,
+  "num_data_workers": 4,
+
+  "train_generator_metrics": ["psnr"],
+  "train_discriminator_metrics": ["binary_accuracy"],
+  "validation_metrics": ["psnr", "ssim"],
+  "best_checkpoint_metrics": ["gen_psnr"],
+
+  "use_tensorboard": true,
+  "num_image_summaries": 5
+}
